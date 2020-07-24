@@ -44,7 +44,8 @@ where T: BicycleRepoInterface {
         
         Ok(result)
     }
-    fn find_by_id(&self, _id: i32) -> Result<BicycleOut, Error> {
-        todo!()
+    fn find_by_id(&self, id: i32) -> Result<BicycleOut, Error> {
+        let result = self.repository.find_by_id(id)?;
+        Ok(BicycleOut::from_domain(result))
     }
 }
