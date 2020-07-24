@@ -10,7 +10,3 @@ pub fn create_pool() -> CustomResult<DBPool> {
     let manager = ConnectionManager::<PgConnection>::new(db_url);
     Pool::builder().build(manager).map_err(DBPoolError)
 }
-
-// pub async fn get_db_con(db_pool: &DBPool) -> CustomResult<DBConn> {
-//     db_pool.get().map_err(DBPoolError)
-// }

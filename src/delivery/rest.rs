@@ -1,6 +1,7 @@
 use std::{convert::Infallible}; 
 use warp::{Filter, hyper::StatusCode};
-use crate::{datasource, error, controllers::routes, repositories::postgres_repo::BicycleRepoPostgres, services::bicycle::BicycleService};
+use crate::{datasource, error, repositories::postgres_repo::BicycleRepoPostgres, services::bicycle::BicycleService,
+    controllers::handler};
 
 #[tokio::main]
 pub async fn rest() {
@@ -13,7 +14,16 @@ pub async fn rest() {
     let health_route = warp::path!("health")
         .map(|| StatusCode::OK);
 
-    let bicycle_routes = routes::bicycle_routes(bike_service);
+    let bikes = warp::path!("bicycles");
+    let bicycle_routes = bikes
+        .and(warp::get())
+        .and(with_manager(bike_service.clone()))
+        .and_then(handler::find_all)
+        .or(bikes
+            .and(warp::post())
+            .and(warp::body::json())
+            .and(with_manager(bike_service.clone()))
+            .and_then(handler::create));
 
     let routes = health_route.or(bicycle_routes)
     .with(warp::cors().allow_any_origin())
