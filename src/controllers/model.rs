@@ -1,4 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{
+    Serialize, 
+    Deserialize
+};
 use crate::services::bicycle_manager::*;
 
 #[derive(Deserialize)]

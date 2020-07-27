@@ -1,13 +1,10 @@
-use std::{convert::Infallible, rc::Rc}; 
 use warp::{Filter, hyper::StatusCode};
-use crate::{datasource, error, repositories::postgres_repo::BicycleRepoPostgres, services::bicycle::BicycleService,
+use crate::{error, repositories::postgres_repo::BicycleRepoPostgres, services::bicycle::BicycleService,
     controllers::{routes, handler}};
 
 #[tokio::main]
 pub async fn rest() {
-    let db_pool = datasource::db::create_pool().expect("failed to create pool");
-
-    let bike_repo = BicycleRepoPostgres::new(db_pool.clone());
+    let bike_repo = BicycleRepoPostgres{};
 
     let bike_service = BicycleService::new(bike_repo);
 
@@ -39,9 +36,19 @@ pub async fn rest() {
         .and(routes::create())
         .and_then(handler::create);
 
+    let update = bicycle_prefix.clone()
+        .and(routes::update())
+        .and_then(handler::update);
+
+    let delete = bicycle_prefix
+        .and(routes::delete())
+        .and_then(handler::delete);
+
     let bicycles_api = list_all_bicycles
         .or(create)
         .or(get_bike)
+        .or(update)
+        .or(delete)
         .with(warp::log("bicycle_api"));
 
     let routes = health_route
@@ -50,8 +57,4 @@ pub async fn rest() {
     .recover(error::handle_rejection);
 
     warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
-}
-
-pub fn with_manager(bicycle_manager: BicycleService<BicycleRepoPostgres>) -> impl Filter<Extract = (BicycleService<BicycleRepoPostgres>,), Error = Infallible> + Clone {
-    warp::any().map(move || bicycle_manager.clone())
 }

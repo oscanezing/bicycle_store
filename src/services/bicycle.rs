@@ -31,11 +31,14 @@ where T: BicycleRepoInterface {
         let result = self.repository.create(BicycleDomain::from_bicycle_in(bike))?;
         Ok(BicycleOut::from_domain(result))
     }
-    fn update(&self, _bike: BicycleIn) -> Result<BicycleOut, Error> {
-        todo!()
+    fn update(&self, bike_id: i32, bike: BicycleIn) -> Result<BicycleOut, Error> {
+        let mut bike_domain = BicycleDomain::from_bicycle_in(bike);
+        bike_domain.id = Some(bike_id);
+        let result = self.repository.update(bike_domain)?;
+        Ok(BicycleOut::from_domain(result))
     }
-    fn delete(&self, _id: i32) -> Result<bool, Error> {
-        todo!()
+    fn delete(&self, id: i32) -> Result<bool, Error> {
+        self.repository.delete(id)
     }
     fn find_all(&self) -> Result<Vec<BicycleOut>, Error> {
         let result = self.repository.find_all()?.into_iter().map(|dm| {
