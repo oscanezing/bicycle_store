@@ -3,7 +3,7 @@ use crate::{
         bicycle::BicycleService, 
         bicycle_manager::*
     }, 
-    repositories::postgres_repo::BicycleRepoPostgres,
+    repositories::postgres_repo::BicycleRepoPostgres
     };
 use warp::{
     reject, 

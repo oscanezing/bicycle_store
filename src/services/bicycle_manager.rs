@@ -14,6 +14,7 @@ impl BicycleIn {
     }
 }
 
+#[derive(Debug)]
 pub struct BicycleOut {
     pub id: i32,
     pub wheel_size: i32,
