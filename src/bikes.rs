@@ -1,11 +1,11 @@
-use serde::{Serialize, Deserialize};
 use crate::error::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct BicycleDomain {
     pub id: Option<i32>,
     pub wheel_size: i32,
-    pub description: String
+    pub description: String,
 }
 
 impl BicycleDomain {

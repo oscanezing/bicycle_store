@@ -6,13 +6,13 @@ extern crate lazy_static;
 
 use dotenv::dotenv;
 
-mod datasource;
-mod error;
-mod schema;
 mod bikes;
-mod delivery;
 mod controllers;
+mod datasource;
+mod delivery;
+mod error;
 mod repositories;
+mod schema;
 mod services;
 
 pub fn run() {

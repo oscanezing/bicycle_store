@@ -1,15 +1,18 @@
-use crate::{repositories::bicycle::BicycleRepoInterface, error::Error, bikes::*};
 use super::bicycle_manager::*;
+use crate::{bikes::*, error::Error, repositories::bicycle::BicycleRepoInterface};
 
 #[derive(Clone)]
-pub struct BicycleService<T> 
-where 
-    T: BicycleRepoInterface 
+pub struct BicycleService<T>
+where
+    T: BicycleRepoInterface,
 {
     pub repository: T,
 }
 
-impl<T> BicycleService<T> where T: BicycleRepoInterface {
+impl<T> BicycleService<T>
+where
+    T: BicycleRepoInterface,
+{
     pub fn new(repository: T) -> Self {
         Self { repository }
     }
@@ -17,17 +20,19 @@ impl<T> BicycleService<T> where T: BicycleRepoInterface {
 
 impl BicycleDomain {
     fn from_bicycle_in(origin: BicycleIn) -> Self {
-        Self{
+        Self {
             id: None,
             description: origin.description,
-            wheel_size: origin.wheel_size
+            wheel_size: origin.wheel_size,
         }
     }
 }
 
-impl<T> BicycleManager for BicycleService<T> 
-where T: BicycleRepoInterface {
-    fn create(&self, bike: BicycleIn) -> Result<BicycleOut, Error>  {
+impl<T> BicycleManager for BicycleService<T>
+where
+    T: BicycleRepoInterface,
+{
+    fn create(&self, bike: BicycleIn) -> Result<BicycleOut, Error> {
         let bike_dm = BicycleDomain::from_bicycle_in(bike);
         bike_dm.is_valid()?;
         let result = self.repository.create(bike_dm)?;
@@ -44,10 +49,13 @@ where T: BicycleRepoInterface {
         self.repository.delete(id)
     }
     fn find_all(&self) -> Result<Vec<BicycleOut>, Error> {
-        let result = self.repository.find_all()?.into_iter().map(|dm| {
-            BicycleOut::from_domain(dm)
-        }).collect::<Vec<BicycleOut>>();
-        
+        let result = self
+            .repository
+            .find_all()?
+            .into_iter()
+            .map(|dm| BicycleOut::from_domain(dm))
+            .collect::<Vec<BicycleOut>>();
+
         Ok(result)
     }
     fn find_by_id(&self, id: i32) -> Result<BicycleOut, Error> {
@@ -62,7 +70,7 @@ mod tests {
     struct RepoMock {}
 
     impl BicycleRepoInterface for RepoMock {
-        fn create(&self, bike: BicycleDomain) -> Result<BicycleDomain, Error>  {
+        fn create(&self, bike: BicycleDomain) -> Result<BicycleDomain, Error> {
             if bike.wheel_size > 0 {
                 Ok(bike)
             } else {
@@ -85,24 +93,24 @@ mod tests {
         }
         fn find_all(&self) -> Result<Vec<BicycleDomain>, Error> {
             let mut result = vec![];
-            result.push(BicycleDomain{
+            result.push(BicycleDomain {
                 id: Some(1),
                 description: String::from("some description"),
-                wheel_size: 21
+                wheel_size: 21,
             });
-            result.push(BicycleDomain{
+            result.push(BicycleDomain {
                 id: Some(2),
                 description: String::from("some description 1"),
-                wheel_size: 22
+                wheel_size: 22,
             });
             Ok(result)
         }
         fn find_by_id(&self, id: i32) -> Result<BicycleDomain, Error> {
             if id > 0 {
-                Ok(BicycleDomain{
+                Ok(BicycleDomain {
                     id: Some(1),
                     description: String::from("some description"),
-                    wheel_size: 21
+                    wheel_size: 21,
                 })
             } else {
                 Err(Error::DBQueryError(diesel::result::Error::NotFound))
@@ -111,14 +119,14 @@ mod tests {
     }
 
     fn new_service() -> BicycleService<RepoMock> {
-        let repo = RepoMock{};
-        BicycleService{repository: repo}
+        let repo = RepoMock {};
+        BicycleService { repository: repo }
     }
 
     fn bike_in(wheel_size: i32, description: &str) -> BicycleIn {
         BicycleIn {
             description: String::from(description),
-            wheel_size
+            wheel_size,
         }
     }
 
@@ -136,9 +144,9 @@ mod tests {
         let service = new_service();
         let bike_in = bike_in(31, "invalid wheel size");
         let result = service.create(bike_in);
-        
+
         assert!(!result.is_ok());
-        
+
         let er = format!("{}", result.err().unwrap());
         assert!(er.contains("invalid wheel size"));
     }
@@ -146,13 +154,15 @@ mod tests {
     #[test]
     fn create_inivalid_description() {
         let service = new_service();
-        let bike_in = bike_in(29, 
+        let bike_in = bike_in(
+            29,
             "this is an invalid description because contains more than 100 characters.
-            this is an invalid description because contains more than 100 characters");
+            this is an invalid description because contains more than 100 characters",
+        );
         let result = service.create(bike_in);
-        
+
         assert!(!result.is_ok());
-        
+
         let er = format!("{}", result.err().unwrap());
         assert!(er.contains("invalid description"));
     }
@@ -162,9 +172,9 @@ mod tests {
         let service = new_service();
         let bike_in = bike_in(31, "invalid wheel size");
         let result = service.update(1, bike_in);
-        
+
         assert!(!result.is_ok());
-        
+
         let er = format!("{}", result.err().unwrap());
         assert!(er.contains("invalid wheel size"));
     }
@@ -172,13 +182,15 @@ mod tests {
     #[test]
     fn udpate_inivalid_description() {
         let service = new_service();
-        let bike_in = bike_in(29, 
+        let bike_in = bike_in(
+            29,
             "this is an invalid description because contains more than 100 characters.
-            this is an invalid description because contains more than 100 characters");
+            this is an invalid description because contains more than 100 characters",
+        );
         let result = service.update(1, bike_in);
-        
+
         assert!(!result.is_ok());
-        
+
         let er = format!("{}", result.err().unwrap());
         assert!(er.contains("invalid description"));
     }

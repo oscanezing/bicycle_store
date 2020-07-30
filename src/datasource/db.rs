@@ -1,9 +1,9 @@
-use diesel::r2d2::{ConnectionManager, self, Pool};
 use diesel::pg::PgConnection;
+use diesel::r2d2::{self, ConnectionManager, Pool};
 use std::env;
 
-use dotenv::dotenv;
 use crate::error::Error;
+use dotenv::dotenv;
 use r2d2::PooledConnection;
 
 type DBPool = Pool<ConnectionManager<PgConnection>>;

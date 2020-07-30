@@ -1,12 +1,8 @@
 use diesel::r2d2::PoolError;
-use thiserror::Error;
-use warp::{
-    Reply, 
-    Rejection, 
-    hyper::StatusCode
-};
-use std::convert::Infallible;
 use serde::Serialize;
+use std::convert::Infallible;
+use thiserror::Error;
+use warp::{hyper::StatusCode, Rejection, Reply};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -17,7 +13,7 @@ pub enum Error {
     #[error("invalid description")]
     BadDescriptionLen,
     #[error("invalid wheel size")]
-    BadWheelSize
+    BadWheelSize,
 }
 
 impl warp::reject::Reject for Error {}
@@ -43,15 +39,15 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
             Error::DBQueryError(_) => {
                 code = StatusCode::BAD_REQUEST;
                 message = "Could not execute request";
-            },
+            }
             Error::BadDescriptionLen => {
                 code = StatusCode::BAD_REQUEST;
                 message = "description must be shorter than 100 chars";
-            },
+            }
             Error::BadWheelSize => {
                 code = StatusCode::BAD_REQUEST;
                 message = "Wheel size must be less than 30";
-            },
+            }
             _ => {
                 eprintln!("unhandled application error: {:?}", err);
                 code = StatusCode::INTERNAL_SERVER_ERROR;
@@ -67,7 +63,7 @@ pub async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> 
         message = "Server error";
     }
 
-    let json = warp::reply::json(&ErrorResponse{
+    let json = warp::reply::json(&ErrorResponse {
         message: message.into(),
     });
 

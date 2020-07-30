@@ -1,15 +1,18 @@
-use warp::{Filter, hyper::StatusCode};
-use crate::{error, repositories::postgres_repo::BicycleRepoPostgres, services::bicycle::BicycleService,
-    controllers::{routes, handler}};
+use crate::{
+    controllers::{handler, routes},
+    error,
+    repositories::postgres_repo::BicycleRepoPostgres,
+    services::bicycle::BicycleService,
+};
+use warp::{hyper::StatusCode, Filter};
 
 #[tokio::main]
 pub async fn rest() {
-    let bike_repo = BicycleRepoPostgres{};
+    let bike_repo = BicycleRepoPostgres {};
 
     let bike_service = BicycleService::new(bike_repo);
 
-    let health_route = warp::path!("health")
-        .map(|| StatusCode::OK);
+    let health_route = warp::path!("health").map(|| StatusCode::OK);
 
     // let bikes = warp::path!("bicycles");
     // let bicycle_routes = bikes
@@ -24,19 +27,23 @@ pub async fn rest() {
 
     let bicycle_prefix = routes::path_prefix(bike_service);
 
-    let list_all_bicycles = bicycle_prefix.clone()
+    let list_all_bicycles = bicycle_prefix
+        .clone()
         .and(routes::list())
         .and_then(handler::find_all);
 
-    let get_bike = bicycle_prefix.clone()
+    let get_bike = bicycle_prefix
+        .clone()
         .and(routes::get())
         .and_then(handler::find_by_id);
-    
-    let create = bicycle_prefix.clone()
+
+    let create = bicycle_prefix
+        .clone()
         .and(routes::create())
         .and_then(handler::create);
 
-    let update = bicycle_prefix.clone()
+    let update = bicycle_prefix
+        .clone()
         .and(routes::update())
         .and_then(handler::update);
 
@@ -52,9 +59,9 @@ pub async fn rest() {
         .with(warp::log("bicycle_api"));
 
     let routes = health_route
-    .or(bicycles_api)
-    .with(warp::cors().allow_any_origin())
-    .recover(error::handle_rejection);
+        .or(bicycles_api)
+        .with(warp::cors().allow_any_origin())
+        .recover(error::handle_rejection);
 
     warp::serve(routes).run(([127, 0, 0, 1], 8000)).await;
 }

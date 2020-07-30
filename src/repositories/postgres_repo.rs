@@ -1,22 +1,13 @@
-use crate::{
-    error::Error, 
-    schema::{
-        bicycles, 
-        bicycles::dsl::*
-    }, 
-    bikes::BicycleDomain, 
-    datasource::db,
-    diesel::RunQueryDsl
-};
 use super::bicycle::BicycleRepoInterface;
-use diesel::{
-    ExpressionMethods, 
-    QueryDsl
+use crate::{
+    bikes::BicycleDomain,
+    datasource::db,
+    diesel::RunQueryDsl,
+    error::Error,
+    schema::{bicycles, bicycles::dsl::*},
 };
-use serde::{
-    Deserialize, 
-    Serialize
-};
+use diesel::{ExpressionMethods, QueryDsl};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Insertable)]
 #[table_name = "bicycles"]
@@ -47,7 +38,7 @@ impl Bicycle {
         Self {
             id: origin.id.unwrap(),
             description: String::from(&origin.description),
-            wheel_size: origin.wheel_size
+            wheel_size: origin.wheel_size,
         }
     }
 }
@@ -57,7 +48,7 @@ impl BicycleDomain {
         Self {
             id: Some(origin.id),
             description: origin.description,
-            wheel_size: origin.wheel_size
+            wheel_size: origin.wheel_size,
         }
     }
 }
@@ -66,9 +57,11 @@ impl BicycleDomain {
 pub struct BicycleRepoPostgres {}
 
 impl BicycleRepoInterface for BicycleRepoPostgres {
-    fn create(&self, bike: BicycleDomain) -> Result<BicycleDomain, Error>  {
+    fn create(&self, bike: BicycleDomain) -> Result<BicycleDomain, Error> {
         let conn = db::connection()?;
-        let result = diesel::insert_into(bicycles).values(NewBicycle::from_domain(bike)).get_result(&conn)?;
+        let result = diesel::insert_into(bicycles)
+            .values(NewBicycle::from_domain(bike))
+            .get_result(&conn)?;
         Ok(BicycleDomain::from_bicycle(result))
     }
     fn update(&self, bike: BicycleDomain) -> Result<BicycleDomain, Error> {
@@ -87,14 +80,15 @@ impl BicycleRepoInterface for BicycleRepoPostgres {
     fn find_all(&self) -> Result<Vec<BicycleDomain>, Error> {
         let conn = db::connection()?;
         let db_results = bicycles.load::<Bicycle>(&conn)?;
-        
-        let results: Vec<BicycleDomain> = db_results.into_iter().map(|db_data| {
-            BicycleDomain {
+
+        let results: Vec<BicycleDomain> = db_results
+            .into_iter()
+            .map(|db_data| BicycleDomain {
                 id: Some(db_data.id),
                 description: db_data.description,
                 wheel_size: db_data.wheel_size,
-            }
-        }).collect();
+            })
+            .collect();
         Ok(results)
     }
     fn find_by_id(&self, bike_id: i32) -> Result<BicycleDomain, Error> {
@@ -103,4 +97,3 @@ impl BicycleRepoInterface for BicycleRepoPostgres {
         Ok(BicycleDomain::from_bicycle(db_result))
     }
 }
-

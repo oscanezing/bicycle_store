@@ -1,8 +1,5 @@
-use serde::{
-    Serialize, 
-    Deserialize
-};
 use crate::services::bicycle_manager::*;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct BicycleRequest {

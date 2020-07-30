@@ -1,4 +1,4 @@
-use crate::{error::Error, controllers::model::*, bikes::BicycleDomain};
+use crate::{bikes::BicycleDomain, controllers::model::*, error::Error};
 
 pub struct BicycleIn {
     pub wheel_size: i32,
